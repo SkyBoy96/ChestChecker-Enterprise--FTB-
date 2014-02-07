@@ -1,0 +1,58 @@
+--{ChestChecker Enterprise Edition]--
+--[Inventory Module]--
+--[Version 1.0]--
+--{Written by Skyboy96]--
+inv = peripheral.wrap("left")
+rednet.open("right" or "down")
+mainframe = 0 --ID of the Mainframe Computer
+updateFrequency = 60 --How often the storage is updated. Faster = more accurate
+stored = {}
+paralell.waitForAll(getRequest(),updateInventory())
+
+--[Listener]--
+function getRequest()
+while true do
+	received = {rednet.receive()}
+	if received[1] == mainframe then
+		request = textutils.unserialize(received[2])
+		--request[1] is the item's name and request[2] is the amount ordered
+		if stored[request[1]] then -- ')' expected? Fixed somehow...
+			ordered = request[2]
+			i = 1
+			while not done do
+				moved = inv.pushItem("down",stored[request[1]][i],ordered) -- Unexpected symbol
+				if moved == ordered then
+					done = true
+				else if i >= #stored[request[1]] then
+					rednet.send(mainframe,tostring(request[2]-ordered))
+					done = true
+				else
+					ordered = ordered - moved
+					i = i+1
+				end
+			end
+		end
+	end
+end
+end
+
+--[Updater]--
+function updateInventory()
+while true do
+	inv.condenseItems()--Compresses the inventory to save space
+	items = {}
+	for i=1,inv.getInventorySize() do
+		stuff = chest.getStackInSlot(i)
+		if stuff ~= nil then
+			if items[stuff["name"]] then
+			-- Line below throws an error, says '<name>' expected
+				items[stuff["name"]] = table.insert(items[stuff["name"]],i)
+                        else--I'm not sure what these functions will do.  Must check before getting too crazy
+                                items[stuff["name"]] = {i}
+		end--Checks the inventory, adding all the things to the list
+	end
+	--rednet.send(mainframe,textutils.serialize(items))
+	stored = items
+	sleep(updateFrequency)
+end
+end

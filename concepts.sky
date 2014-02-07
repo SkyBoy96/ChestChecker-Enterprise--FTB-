@@ -1,0 +1,8 @@
+The requesting terminal will have a mode for requesting by id and by name
+The mainframe will receive requests, and send the name to a translator
+The translator will convert the name into the item id, and send it back to the Mainframe
+The mainframe will send the id to the inventory modules
+
+Modules can currently only handle named requests, should be solved by an alias system the mainframe talks to
+
+Mainframe will hold a list of all stored items, and the id's of the computers servicing those inventories.

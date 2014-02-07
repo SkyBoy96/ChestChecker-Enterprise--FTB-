@@ -1,0 +1,88 @@
+function checkChest(chest, item)
+  item = item or nil
+  loi = {}
+  slots = chest.getInventorySize()
+  for i=1,slots do
+    stuff = chest.getStackInSlot(i)
+    if stuff ~= nil then
+      if item ~= nil then
+       -- print(stuff["name"])
+        if (stuff["name"]==item) then
+          return i
+        end
+      end
+      loi[stuff["name"]]= addToTable(loi,stuff["name"],stuff["qty"])
+    end
+  end
+  if item == nil then
+    return loi
+  end
+end
+
+function addToTable(table,key,value)
+  if table[key] ~= nil then
+    table[key] = value + table[key]
+  else
+    table[key] = value
+  end
+  
+  return table[key]
+end
+
+function dump(items)
+  file = fs.open("storedItems","w")
+  file.writeLine("Items in Storage:")
+  for i,p in pairs(items) do
+    file.writeLine(i..":"..p)
+  end
+  file.close()
+end
+function getChests()
+  chests = {}
+  i=1
+  for k,v in pairs(peripheral.getNames()) do
+    if (string.find(v, "iron") or string.find(v,"diamond")) then
+      chest = peripheral.wrap(v)
+      chests[i]= chest
+      i = i+1
+    end
+  end
+  return chests
+end
+
+function getItem(item, amount)
+  chests = getChests()
+  if chests ~= nil then
+    for i=1,#chests do
+     repeat
+        -- Will stop looking after 1 find
+   --   while slot ==nil do
+        slot = checkChest(chests[i],item)
+        -- print(slot)
+        if slot ~= nil then
+          moved = chests[i].pushItem("down",slot,amount)
+          amount = amount - moved
+        end
+    until amount == 0 or slot == nil
+        if amount == 0 then
+          return amount
+        end
+      
+    end
+    return amount
+  end
+end
+
+--items = checkChest(chests[1])
+--for i,p in pairs(items) do
+--  print(i..":"..p)
+--end
+
+--rednet.open("right")
+--while true do
+--  id, message = rednet.receive()
+--  if message == "refresh" then
+--    checkChest(chest)
+--    rednet.send(id, textutils.serialize(items))
+--  end
+--end
